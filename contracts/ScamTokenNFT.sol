@@ -11,23 +11,29 @@ contract ScamToken is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
     bool public paused = true;
     bool public whitelistMintEnabled = false;
 
-    uint public price = 1000000 gwei;
     uint public maxSupply;
+    uint public price;
     uint public lastTokenId = 0;
 
     mapping(address => bool) private _whiteList;
     
-    constructor(uint _maxSupply) ERC721("ScamToken", "ScamNFT") {
+    constructor(uint _maxSupply, uint _price) ERC721("ScamToken", "ScamNFT") {
         maxSupply = _maxSupply;
+        price = _price;
     }
 
-    modifier mintCompliance() {
-        require(lastTokenId + 1 <= maxSupply, "Max supply exceeded!");
+    modifier mintMaxSupply() {
+        require(lastTokenId + 1 <= maxSupply, "Max supply exceeded");
         _;
     }
 
-    modifier mintPriceCompliance() {
-        require(msg.value >= price, "Insufficient funds!");
+    modifier mintPriceCheck() {
+        require(msg.value >= price, "Insufficient ETH");
+        _;
+    }
+
+    modifier whiteListCheck(address _address) {
+        require(_whiteList[_address], "Address not exist in whitelist");
         _;
     }
 
@@ -40,13 +46,26 @@ contract ScamToken is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         require(os);
     }
 
+    function whiteListMint(address _to, string memory _uri)
+        public
+        payable
+        mintMaxSupply
+        mintPriceCheck
+        whiteListCheck(_to)
+    {
+        require(paused == false && whitelistMintEnabled == true, "It's not minting period for whitelist members");
+        lastTokenId++;
+        _safeMint(_to, lastTokenId);
+        _setTokenURI(lastTokenId, _uri);
+    }
+
     function safeMint(address _to, string memory _uri)
         public
         payable
-        onlyOwner
-        mintCompliance
-        mintPriceCompliance
+        mintMaxSupply
+        mintPriceCheck
     {
+        require(paused == false, "It's not minting period");
         lastTokenId++;
         _safeMint(_to, lastTokenId);
         _setTokenURI(lastTokenId, _uri);
@@ -75,5 +94,13 @@ contract ScamToken is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
 
     function setWhiteList(address _address, bool _isWhiteList) public onlyOwner {
         _whiteList[_address] = _isWhiteList;
+    }
+
+    function setPaused(bool _pause) public onlyOwner {
+        paused = _pause;
+    }
+
+    function setWhitelistMintEnabled(bool _enabled) public onlyOwner {
+        whitelistMintEnabled = _enabled;
     }
 }
