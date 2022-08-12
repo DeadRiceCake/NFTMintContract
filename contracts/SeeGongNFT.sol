@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract ScamToken is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
+contract SeeGongToken is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
     
     bool public paused = true;
     bool public whitelistMintEnabled = false;
@@ -17,7 +17,7 @@ contract ScamToken is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
 
     mapping(address => bool) private _whiteList;
     
-    constructor(uint _maxSupply, uint _price) ERC721("ScamToken", "ScamNFT") {
+    constructor(uint _maxSupply, uint _price) ERC721("SeeGongToken", "SeegongNFT") {
         maxSupply = _maxSupply;
         price = _price;
     }
