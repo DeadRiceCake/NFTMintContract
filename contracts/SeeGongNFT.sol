@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract SeeGongToken is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
     
@@ -38,7 +39,7 @@ contract SeeGongToken is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
     }
 
     function _baseURI() internal pure override returns (string memory) {
-        return "ipfs://";
+        return "ipfs://bafybeicomfef4ilufdwqbo262savz2ig4kzveynlsgat3jk5a5zcxwfluu/";
     }
 
     function withdraw() public onlyOwner nonReentrant {
@@ -46,7 +47,7 @@ contract SeeGongToken is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         require(os);
     }
 
-    function whiteListMint(address _to, string memory _uri)
+    function whiteListMint(address _to)
         public
         payable
         mintMaxSupply
@@ -56,10 +57,10 @@ contract SeeGongToken is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         require(paused == false && whitelistMintEnabled == true, "It's not minting period for whitelist members");
         lastTokenId++;
         _safeMint(_to, lastTokenId);
-        _setTokenURI(lastTokenId, _uri);
+        _setTokenURI(lastTokenId, string(abi.encodePacked(Strings.toString(lastTokenId), ".json")));
     }
 
-    function safeMint(address _to, string memory _uri)
+    function safeMint(address _to)
         public
         payable
         mintMaxSupply
@@ -68,7 +69,7 @@ contract SeeGongToken is ERC721, ERC721URIStorage, Ownable, ReentrancyGuard {
         require(paused == false, "It's not minting period");
         lastTokenId++;
         _safeMint(_to, lastTokenId);
-        _setTokenURI(lastTokenId, _uri);
+        _setTokenURI(lastTokenId, string(abi.encodePacked(Strings.toString(lastTokenId), ".json")));
     }
 
     function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
