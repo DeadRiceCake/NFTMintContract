@@ -15,8 +15,8 @@ function WalletBalance() {
     return (
       <div className="card">
         <div className="card-body">
-          <h5 className="card-title">Your Balance: {balance}</h5>
-          <button className="btn btn-success" onClick={() => getBalance()}>Show My Balance</button>
+          <h5 className="card-title">당신의 잔액: {balance} ETH</h5>
+          <button className="btn btn-success" onClick={() => getBalance()}>잔액 확인</button>
         </div>
       </div>
     );

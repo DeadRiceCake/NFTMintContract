@@ -2,17 +2,23 @@ import WalletBalance from './WalletBalance';
 import { useEffect, useState } from 'react';
 
 import { ethers } from 'ethers';
-import FiredGuys from '../artifacts/contracts/MyNFT.sol/FiredGuys.json';
+import SeeGong from '../artifacts/contracts/SeeGongNFT.sol/SeeGongToken.json';
 
-const contractAddress = 'YOUR_DEPLOYED_CONTRACT_ADDRESS';
+const contractAddress = '0x2A45fccb336214985425d3Ab7853d64d4Baf884A';
 
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 
 // get the end user
 const signer = provider.getSigner();
+let accounts = await provider.send("eth_requestAccounts", []);
+let account = accounts[0];
+provider.on('accountsChanged', function (accounts) {
+    account = accounts[0];
+    console.log(address); // Print new address
+});
 
 // get the smart contract
-const contract = new ethers.Contract(contractAddress, FiredGuys.abi, signer);
+const contract = new ethers.Contract(contractAddress, SeeGong.abi, signer);
 
 
 function Home() {
@@ -23,7 +29,7 @@ function Home() {
   }, []);
 
   const getCount = async () => {
-    const count = await contract.count();
+    const count = await contract.lastTokenId();
     console.log(parseInt(count));
     setTotalMinted(parseInt(count));
   };
@@ -32,14 +38,14 @@ function Home() {
     <div>
       <WalletBalance />
 
-      <h1>Fired Guys NFT Collection</h1>
+      <h1>시공조아 NFT 컬렉숀</h1>
       <div className="container">
         <div className="row">
           {Array(totalMinted + 1)
             .fill(0)
             .map((_, i) => (
-              <div key={i} className="col-sm">
-                <NFTImage tokenId={i} getCount={getCount} />
+              <div key={i+1} className="col-sm">
+                <NFTImage tokenId={i+1} getCount={getCount} totalMinted={totalMinted}/>
               </div>
             ))}
         </div>
@@ -48,32 +54,32 @@ function Home() {
   );
 }
 
-function NFTImage({ tokenId, getCount }) {
-  const contentId = 'Qmdbpbpy7fA99UkgusTiLhMWzyd3aETeCFrz7NpYaNi6zY';
-  const metadataURI = `${contentId}/${tokenId}.json`;
-  const imageURI = `https://gateway.pinata.cloud/ipfs/${contentId}/${tokenId}.png`;
-//   const imageURI = `img/${tokenId}.png`;
+function NFTImage({ tokenId, getCount, totalMinted }) {
+  const metadataCID = 'bafybeicomfef4ilufdwqbo262savz2ig4kzveynlsgat3jk5a5zcxwfluu';
+  const imgCID = 'bafybeihdoxcbk53l2uis4et6azvsydks4oq3wtdojqe4ildopzc6wkrm3q';
+  const metadataURI = `https://ipfs.io/ipfs/${metadataCID}/${tokenId}.json`;
+  const imageURI = `https://ipfs.io/ipfs/${imgCID}/${tokenId}.png`;
 
-  const [isMinted, setIsMinted] = useState(false);
-  useEffect(() => {
-    getMintedStatus();
-  }, [isMinted]);
+  // const [isMinted, setIsMinted] = useState(false);
+  // useEffect(() => {
+  //   getMintedStatus();
+  // }, [isMinted]);
 
-  const getMintedStatus = async () => {
-    const result = await contract.isContentOwned(metadataURI);
-    console.log(result)
-    setIsMinted(result);
-  };
+  // const getMintedStatus = async () => {
+  //   const result = await contract.isContentOwned(metadataURI);
+  //   console.log(result)
+  //   setIsMinted(result);
+  // };
 
   const mintToken = async () => {
     const connection = contract.connect(signer);
     const addr = connection.address;
-    const result = await contract.payToMint(addr, metadataURI, {
-      value: ethers.utils.parseEther('0.05'),
+    const result = await contract.safeMint(account, {
+      value: ethers.utils.parseEther('0.001'),
     });
 
     await result.wait();
-    getMintedStatus();
+    // getMintedStatus();
     getCount();
   };
 
@@ -81,18 +87,19 @@ function NFTImage({ tokenId, getCount }) {
     const uri = await contract.tokenURI(tokenId);
     alert(uri);
   }
+
   return (
     <div className="card" style={{ width: '18rem' }}>
-      <img className="card-img-top" src={isMinted ? imageURI : 'img/placeholder.png'}></img>
+      <img className="card-img-top" src={totalMinted+1 != tokenId ? imageURI : 'img/placeholder.png'}></img>
       <div className="card-body">
         <h5 className="card-title">ID #{tokenId}</h5>
-        {!isMinted ? (
+        {totalMinted+1 == tokenId ? (
           <button className="btn btn-primary" onClick={mintToken}>
-            Mint
+            민팅하기
           </button>
         ) : (
           <button className="btn btn-secondary" onClick={getURI}>
-            Taken! Show URI
+            URI보기
           </button>
         )}
       </div>
